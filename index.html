@@ -19,8 +19,38 @@
 			var canvas=canvasElement.get(0).getContext("2d");
 			
 			var bg_image = new Image();
+			
+			var KID_RADIUS=30;
+			
+			var kids=[];
+						
+			function Kid(Index){
+				Index = Index || {};
+				Index.color="#00A";
+				Index.x=Math.random()*CANVAS_WIDTH/2;;
+				Index.y=50;
+				Index.width=KID_RADIUS;
+				Index.height=KID_RADIUS;
+				Index.draw=function(){
+					canvas.fillStyle=Index.color;
+					canvas.fillRect(Index.x,Index.y,Index.width,Index.height);
+				};
+				
+				Index.update = function() {
+					Index.x+=2;
+					Index.y+=1;
+				};
+				
+				return Index;				
+				
+			};
+			
+			//
+			
 			function load_images(){
 				bg_image.src = 'images/background.png';	
+				kids.push(Kid());
+				kids.push(Kid());
 			}
 			
 			setInterval(function(){
@@ -32,6 +62,9 @@
 			function update(){
 				textX+=1;
 				textY+=1;
+				kids.forEach(function(kid) {
+					kid.update();
+				});
 			}
 			
 			function draw(){
@@ -39,6 +72,9 @@
 				canvas.drawImage(bg_image, 0, 0);
 				canvas.fillStyle="#000";
 				canvas.fillText("Test",textX,textY);				
+				kids.forEach(function(kid) {		
+						kid.draw();
+				});        
 			}
 
 			load_images()
