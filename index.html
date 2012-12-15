@@ -20,10 +20,39 @@
 			
 			var bg_image = new Image();
 			var kid_image = new Image();
-			var KID_RADIUS=30;
 			
+			var KID_RADIUS=30;
 			var kids=[];
-						
+			
+			var rooms=[];
+
+			function Room(Index){
+				Index = Index || {};
+				Index.width=Index.x1-Index.x0
+				Index.height=Index.y1-Index.y0
+				Index.centerX=(Index.x0+Index.x1)/2;
+				Index.centerY=(Index.y0+Index.y1)/2;
+				
+				Index.getName = function(){
+					return Index.roomName;
+				};
+				
+				Index.getX = function(){
+					return Index.centerX;
+				};
+				
+				Index.getY = function(){
+					return Index.centerY;
+				};
+				
+				Index.draw = function(){
+					canvas.fillStyle=Index.thisColor;
+					canvas.fillRect(Index.x0,Index.y0,Index.width,Index.height);
+				};
+				
+				return Index;
+			};
+			
 			function Kid(Index){
 				Index = Index || {};
 				Index.color="#00A";
@@ -44,13 +73,23 @@
 				
 			};
 			
-			//
-			
-			function load_images(){
+			function init(){
 				bg_image.src = 'images/background.png';
 				kid_image.src = 'images/kid.png';	
 				kids.push(Kid());
 				kids.push(Kid());
+				
+				rooms.push(Room({roomName:"House",			x0:330,y0:0,	x1:667,y1:600,	thisColor:"#FFF"}));
+				rooms.push(Room({roomName:"Kid's Room",		x0:330,y0:0,	x1:475,y1:135,	thisColor:"#00F"}));
+				rooms.push(Room({roomName:"Kid's Bathroom",	x0:330,y0:135,	x1:475,y1:200,	thisColor:"#0F0"}));
+				rooms.push(Room({roomName:"Office",			x0:330,y0:200,	x1:475,y1:335,	thisColor:"#0FF"}));
+				rooms.push(Room({roomName:"Kitchen",		x0:330,y0:335,	x1:475,y1:482,	thisColor:"#F00"}));
+				rooms.push(Room({roomName:"Dining Room",	x0:330,y0:482,	x1:475,y1:600,	thisColor:"#F0F"}));
+				
+				rooms.push(Room({roomName:"Parent's Room",		x0:524,y0:0,	x1:667,y1:225,	thisColor:"#FF0"}));
+				rooms.push(Room({roomName:"Parent's Bathroom",	x0:524,y0:225,	x1:667,y1:338,	thisColor:"#F55"}));
+				rooms.push(Room({roomName:"Living Room",		x0:475,y0:385,	x1:667,y1:600,	thisColor:"#888"}));
+				
 			}
 			
 			setInterval(function(){
@@ -71,13 +110,17 @@
 				canvas.clearRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
 				canvas.drawImage(bg_image, 0, 0);
 				canvas.fillStyle="#000";
-				canvas.fillText("Test",textX,textY);				
+				rooms.forEach(function(room) {
+					room.draw()
+					canvas.fillStyle="#000";
+					canvas.fillText(room.getName(),room.getX(),room.getY());
+				});
 				kids.forEach(function(kid) {		
 						kid.draw();
 				});        
 			}
 
-			load_images()
+			init()
 			canvasElement.appendTo('body');
 			
 		</script>
