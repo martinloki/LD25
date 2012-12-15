@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Granny's Gummies - LD25</title>
+		<script language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js" type="text/javascript"></script>
+	</head>
+	<body>
+		<h1>Granny's Gummies</h1>
+		<script type='text/javascript'>
+			var CANVAS_WIDTH=480;
+			var CANVAS_HEIGHT=320;
+			var canvasElement=$("<canvas width='"+CANVAS_WIDTH+"' height='"+CANVAS_HEIGHT+"'></canvas>");
+			var canvas=canvasElement.get(0).getContext("2d");
+			var FPS=30;
+			var textX=50;
+			var textY=50;
+			
+			canvasElement.appendTo('body');
+			
+			
+			setInterval(function(){
+					update();
+					draw();
+				},1000/FPS
+			);
+
+			function update(){
+				textX+=1;
+				textY+=1;
+			}
+			
+			function draw(){
+				canvas.clearRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+				canvas.fillStyle="#000";
+				canvas.fillText("Test",textX,textY);
+			}
+
+			
+		</script>
+	</body>
+</html>
