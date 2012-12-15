@@ -19,7 +19,7 @@
 			var canvas=canvasElement.get(0).getContext("2d");
 			
 			var bg_image = new Image();
-			
+			var kid_image = new Image();
 			var KID_RADIUS=30;
 			
 			var kids=[];
@@ -32,8 +32,7 @@
 				Index.width=KID_RADIUS;
 				Index.height=KID_RADIUS;
 				Index.draw=function(){
-					canvas.fillStyle=Index.color;
-					canvas.fillRect(Index.x,Index.y,Index.width,Index.height);
+					canvas.drawImage(kid_image, Index.x,Index.y);
 				};
 				
 				Index.update = function() {
@@ -48,7 +47,8 @@
 			//
 			
 			function load_images(){
-				bg_image.src = 'images/background.png';	
+				bg_image.src = 'images/background.png';
+				kid_image.src = 'images/kid.png';	
 				kids.push(Kid());
 				kids.push(Kid());
 			}
