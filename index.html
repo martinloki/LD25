@@ -37,12 +37,28 @@
 					return Index.roomName;
 				};
 				
-				Index.getX = function(){
+				Index.getCX = function(){
 					return Index.centerX;
 				};
 				
-				Index.getY = function(){
+				Index.getCY = function(){
 					return Index.centerY;
+				};
+				
+				Index.getX = function(){
+					return Index.x0;
+				};
+				
+				Index.getY = function(){
+					return Index.y0;
+				};
+				
+				Index.getWidth = function(){
+					return Index.width;
+				};
+				
+				Index.getHeight = function(){
+					return Index.height;
 				};
 				
 				Index.draw = function(){
@@ -55,18 +71,29 @@
 			
 			function Kid(Index){
 				Index = Index || {};
-				Index.color="#00A";
-				Index.x=Math.random()*CANVAS_WIDTH/2;;
-				Index.y=50;
+				Index.baseVel=10;
 				Index.width=KID_RADIUS;
 				Index.height=KID_RADIUS;
+				Index.energy=Math.random()*25;
+				Index.focus=Math.random()*50+25;
+				Index.sugar=0;
+				Index.crashETA=0;
+				Index.timeLeftInRoom=100;
+				Index.velX=Index.baseVel*(Index.sugar+1)/10;
+				Index.velY=Index.baseVel*(Index.sugar+1)/10;
+					
 				Index.draw=function(){
 					canvas.drawImage(kid_image, Index.x,Index.y);
+					canvas.fillStyle=Index.color;
+					canvas.fillText(Index.name,Index.x,Index.y);
 				};
 				
 				Index.update = function() {
-					Index.x+=2;
-					Index.y+=1;
+					Index.x+=Index.velX;
+					Index.y+=Index.velY;
+					Index.timeLeftInRoom-=1
+					
+					
 				};
 				
 				return Index;				
@@ -75,9 +102,7 @@
 			
 			function init(){
 				bg_image.src = 'images/background.png';
-				kid_image.src = 'images/kid.png';	
-				kids.push(Kid());
-				kids.push(Kid());
+				kid_image.src = 'images/kid.png';
 				
 				rooms.push(Room({roomName:"House",			x0:330,y0:0,	x1:667,y1:600,	thisColor:"#FFF"}));
 				rooms.push(Room({roomName:"Kid's Room",		x0:330,y0:0,	x1:475,y1:135,	thisColor:"#00F"}));
@@ -89,6 +114,9 @@
 				rooms.push(Room({roomName:"Parent's Room",		x0:524,y0:0,	x1:667,y1:225,	thisColor:"#FF0"}));
 				rooms.push(Room({roomName:"Parent's Bathroom",	x0:524,y0:225,	x1:667,y1:338,	thisColor:"#F55"}));
 				rooms.push(Room({roomName:"Living Room",		x0:475,y0:385,	x1:667,y1:600,	thisColor:"#888"}));
+
+				kids.push(Kid({name:"Thing 1",color:"#F0F",x:Math.random()*(rooms[0].getWidth())+rooms[0].getX(),y:Math.random()*(rooms[0].getHeight())+rooms[0].getY()}));
+				kids.push(Kid({name:"Thing 2",color:"#0F0",x:Math.random()*(rooms[0].getWidth())+rooms[0].getX(),y:Math.random()*(rooms[0].getHeight())+rooms[0].getY()}));
 				
 			}
 			
@@ -113,8 +141,11 @@
 				rooms.forEach(function(room) {
 					room.draw()
 					canvas.fillStyle="#000";
-					canvas.fillText(room.getName(),room.getX(),room.getY());
+					canvas.fillText(room.getName(),room.getX()+5,room.getY()+10);
 				});
+				
+			
+				
 				kids.forEach(function(kid) {		
 						kid.draw();
 				});        
