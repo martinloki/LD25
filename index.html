@@ -22,10 +22,10 @@
 			var kid_image = new Image();
 			
 			var KID_RADIUS=30;
-			var kids=[];
 			
 			var rooms=[];
-
+			var kids=[];
+			
 			function Room(Index){
 				Index = Index || {};
 				Index.width=Index.x1-Index.x0
@@ -81,19 +81,41 @@
 				Index.timeLeftInRoom=100;
 				Index.velX=Index.baseVel*(Index.sugar+1)/10;
 				Index.velY=Index.baseVel*(Index.sugar+1)/10;
-					
+				Index.currentRoom="tbd";
+				
 				Index.draw=function(){
 					canvas.drawImage(kid_image, Index.x,Index.y);
 					canvas.fillStyle=Index.color;
 					canvas.fillText(Index.name,Index.x,Index.y);
+					
 				};
-				
+								
 				Index.update = function() {
 					Index.x+=Index.velX;
 					Index.y+=Index.velY;
 					Index.timeLeftInRoom-=1
-					
-					
+				};
+				
+				Index.getRoom = function(){
+					return Index.currentRoom;
+				};
+				
+				Index.getSugar = function(){
+					return Index.sugar;
+				};
+				
+				Index.getName = function(){
+					return Index.name;
+				};
+				
+				Index.drawPanel = function(x,y){
+					canvas.fillText(Index.name,x,y);
+					canvas.fillText("Location:",x+15,y+20);
+					canvas.fillText("Sugar Level:",x+15,y+30);
+					canvas.fillText("Time Left:",x+15,y+40);
+					canvas.fillText(Index.currentRoom,x+80,y+20);
+					canvas.fillText(Index.sugar,x+80,y+30);
+					canvas.fillText(Index.timeLeftInRoom,x+80,y+40);
 				};
 				
 				return Index;				
@@ -144,11 +166,13 @@
 					canvas.fillText(room.getName(),room.getX()+5,room.getY()+10);
 				});
 				
-			
-				
+				nextPanelX=50;
+				nextPanelY=50;
 				kids.forEach(function(kid) {		
 						kid.draw();
-				});        
+						kid.drawPanel(nextPanelX,nextPanelY);
+						nextPanelY+=150;
+				});               
 			}
 
 			init()
