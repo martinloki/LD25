@@ -14,6 +14,8 @@
 			var textX=50;
 			var textY=50;
 			
+			var gameState=0; //0:init, 1:start, 2:game
+			
 			var mouseMoveMsg="";
 			var mouseClickMsg="";
 			
@@ -31,16 +33,31 @@
 			
 			canvas2.addEventListener('mousedown', function(evt) {
 				var mousePos = getMousePos(canvas2, evt);
-				mouseClickMsg = 'Clicked';			
+				mouseClickMsg = 'Clicked';
+
 			}, false);
 			
 			canvas2.addEventListener('mouseup', function(evt) {
 				var mousePos = getMousePos(canvas2, evt);
-				mouseClickMsg = '';			
+				mouseClickMsg = '';
+				toggleState();
 			}, false);
 	  			
+			function toggleState(){
+				if(gameState==0){
+					gameState=1;
+				}else if(gameState==1){
+					gameState=2;
+					
+				}else{
+					init();
+					gameState=1;
+				}
+			}
+				
 			var bg_image = new Image();
 			var kid_image = new Image();
+			var splash_image = new Image();
 			
 			var KID_RADIUS=30;
 			
@@ -446,8 +463,8 @@
 					debugStrings.push("Test:"+Index.test);
 					debugStrings.push("Current Room:"+Index.currentRoom.getName());
 					debugStrings.push("Current Room ID:"+Index.currentRoom.getIndex());
-					//debugStrings.push("VelX:"+Index.velX+"   oldX:"+Index.oldX);
-					//debugStrings.push("VelY:"+Index.velY+"   oldY:"+Index.oldY);
+					debugStrings.push("VelX:"+Index.velX+"   oldX:"+Index.oldX);
+					debugStrings.push("VelY:"+Index.velY+"   oldY:"+Index.oldY);
 					
 					debug_y=y+40;
 					canvas.fillStyle="#000";
@@ -466,6 +483,14 @@
 			function init(){
 				bg_image.src = 'images/background.png';
 				kid_image.src = 'images/kid.png';
+				splash_image.src = 'images/splash.png';
+				
+				//ugly, but only 2 hours left....
+				rooms=[];
+				portals=[];
+				kids=[];
+				hallDoorList=[];
+				
 				
 				rooms.push(Room({roomName:"Halls",			x0:330,y0:0,	x1:667,y1:600,	dList:[0,3,4,7,8,10,11],	thisColor:"#FFF"}));
 				rooms.push(Room({roomName:"Kid's Room",		x0:330,y0:0,	x1:475,y1:135,	dList:[0,1],	thisColor:"#00F"}));
@@ -498,12 +523,27 @@
 				kids.push(Kid({name:"Thing 1",color:"#F0F"}));
 				kids.push(Kid({name:"Thing 2",color:"#0F0"}));
 				kids.push(Kid({name:"Thing 3",color:"#0FF"}));				
-				kids.push(Kid({name:"Thing 4",color:"#FF0"}));				
+				kids.push(Kid({name:"Thing 4",color:"#FF0"}));	
+
+				totalDamage=0;
+				timeLeft=120*30; //two min --> two hours  (120sec*FPS)... not clean, but...				
 			}
 			
 			setInterval(function(){
-					update();
-					draw();
+					if(gameState==1){
+						update();
+						draw();
+					}else{
+						canvas.drawImage(splash_image, 0, 0);
+						if(gameState==2){
+							canvas.fillStyle="#000";
+							canvas.font = "normal normal 30px Verdana";
+							damageString="Total Damage: $"+Math.floor(totalDamage*100)/100;
+							canvas.fillText(damageString,400-canvas.measureText(damageString).width/2,380);
+							canvas.font = "normal normal 10px Verdana";
+						}
+					}
+					
 				},1000/FPS);
 
 			function update(){
@@ -545,6 +585,7 @@
 				canvas.fillText("Parents Return in: "+Math.floor(timeLeft/30/60)+":"+Math.round(timeLeft/30%60),10,10);
 				canvas.fillText("Total Damage: $"+Math.floor(totalDamage*100)/100,10,20);
 				
+				canvas.fillText("GameState:"+gameState,10,575);
 				canvas.fillText(mouseClickMsg,10,585);
 				canvas.fillText(mouseMoveMsg,10,595);
 			}
