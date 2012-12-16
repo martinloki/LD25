@@ -3,7 +3,7 @@
 	<head>
 		<title>Granny's Gummies - LD25</title>
 		<link href="/stylesheets/LD25.css" media="all" rel="stylesheet" type="text/css"/>
-		<script language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js" type="text/javascript"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js" type="text/javascript"></script>
 	</head>
 	<body>
 		<h1>Granny's Gummies</h1>
@@ -112,6 +112,7 @@
 				Index.currentRoom=Index.currentRoomObj.getName();
 				Index.nextRoomIndex=9;
 				Index.targetDoorSelected=false;
+				Index.justPassingThroughTheDoor=false;
 				//spawn away from the walls
 				Index.xmin=Index.currentRoomObj.getX()+5;
 				Index.xmax=Index.currentRoomObj.getX()+Index.currentRoomObj.getWidth()-Index.width-5;
@@ -155,7 +156,7 @@
 					
 					if(Index.timeLeftInRoom>=0){  //still playtime in this room?
 
-						Index.timeLeftInRoom-=1
+						Index.timeLeftInRoom-=1;
 						if(Index.x<Index.currentRoomObj.x0||(Index.x+Index.width)>Index.currentRoomObj.x1){
 							Index.velX*=-1;
 							Index.x+=Index.velX*2;
@@ -178,7 +179,9 @@
 						if(rooms[Index.nextRoomIndex].inRoom(Index.x,Index.y)){	//are we there yet?
 						
 							Index.timeLeftInRoom=Math.random()*600+200;
-							Index.currentRoomObj=rooms[Index.nextRoomIndex];
+							
+							//Index.currentRoomObj=rooms[Index.nextRoomIndex];
+							Index.updateRoom();
 							Index.my_xy_factors=getVectorMultiplier(Index.x,Index.y,Math.random()*100+Index.x-50,Math.random()*100+Index.y-50);				
 							Index.velX=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[0];
 							Index.velY=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[1];
@@ -199,12 +202,21 @@
 									Index.doorX-=Index.width/2;
 									if((Index.doorY-Index.y)>0){
 										Index.doorY-=Index.height;
+										Index.exitPathY=Index.height;
+									}else{
+										Index.exitPathY=-Index.height;
 									}
+									Index.exitPathX=0;
+									
 								}else{
 									Index.doorY-=Index.height/2;
 									if((Index.doorX-Index.x)>0){
 										Index.doorX-=Index.width;
+										Index.exitPathX=Index.width;
+									}else{
+										Index.exitPathXY=-Index.width;
 									}
+									Index.exitPathY=0;
 								}									
 						
 								Index.my_xy_factors=getVectorMultiplier(Index.x,Index.y,Index.doorX,Index.doorY);				
@@ -221,18 +233,55 @@
 							
 							if(Math.abs(Index.velX)>Math.abs(Index.x-Index.doorX)){
 								Index.velX=0;
-								Index.x=Index.doorX;
+								Index.x=Index.doorX;								
 							}
 							if(Math.abs(Index.velY)>Math.abs(Index.y-Index.doorY)){
 								Index.velY=0;
 								Index.y=Index.doorY;
 							}
-							Index.x+=Index.velX;
-							Index.y+=Index.velY;						
 							
+							if(Index.velY==0&&Index.velX==0){
+								Index.my_xy_factors=getVectorMultiplier(Index.x,Index.y,Index.x+Index.exitPathX,Index.y+Index.exitPathY);
+								Index.velX=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[0];
+								Index.velY=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[1];
+								Index.passDistX=Math.abs(Index.exitPathX);
+								Index.passDistY=Math.abs(Index.exitPathY);
+								Index.justPassingThroughTheDoor=true;
+								Index.test="good";
+							}
+							
+							Index.x+=Index.velX;
+							Index.y+=Index.velY;
+
+							if(Index.justPassingThroughTheDoor){
+								if(Index.exitPathX!=0){Index.passDistX-=Math.abs(Index.velX);}
+								if(Index.exitPathY!=0){Index.passDistY-=Math.abs(Index.velY);}
+								if(Index.passDistX<=0&&Index.passDistY<=0){  //got into the next room
+									Index.justPassingThroughTheDoor=false;
+									Index.targetDoorSelected=false;
+									Index.updateRoom();
+								}
+							}								
 						}
 					}
 				};
+				
+				Index.updateRoom=function(){
+					rooms.forEach(function(room){
+						if(room.equals(rooms[0])){
+							Index.inHouse=room.isInRoom(Index.x,Index.y);
+						}
+						if(room.isInRoom(Index.x,Index.y)){
+							Index.currentRoomObj=room;
+							Index.currentRoom=room.getName();
+							break;
+						}									
+					});
+				};
+				
+				
+				
+				
 				
 				Index.getRoom = function(){
 					return Index.currentRoom;
@@ -255,7 +304,7 @@
 					
 					//------½DEBUGGING½-----
 					
-					debugStrings=new Array
+					debugStrings=new Array;
 					debugStrings.push(String("In House:"+Index.inHouse));
 					debugStrings.push("Time Left:"+Index.timeLeftInRoom);
 					debugStrings.push("nextRoomID:"+Index.nextRoomIndex);
@@ -263,8 +312,10 @@
 					debugStrings.push("DoorChoice:"+Index.doorChoice);
 					debugStrings.push("PosX:"+Math.floor(Index.x)+"  DoorX:"+Index.doorX);
 					debugStrings.push("PosY:"+Math.floor(Index.y)+"  DoorY:"+Index.doorY);
-					debugStrings.push("VelX:"+Index.velX+"   oldX:"+Index.oldX);
-					debugStrings.push("VelY:"+Index.velY+"   oldY:"+Index.oldY);
+					debugStrings.push("Passing:"+Index.justPassingThroughTheDoor);
+					debugStrings.push("Test:"+Index.test);
+					//debugStrings.push("VelX:"+Index.velX+"   oldX:"+Index.oldX);
+					//debugStrings.push("VelY:"+Index.velY+"   oldY:"+Index.oldY);
 					
 					debug_y=y+40;
 					canvas.fillStyle="#000";
@@ -312,9 +363,9 @@
 				hallDoorList=[0,3,4,7,8,10];
 				
 				kids.push(Kid({name:"Thing 1",color:"#F0F"}));
-				kids.push(Kid({name:"Thing 2",color:"#0F0"}));
-				kids.push(Kid({name:"Thing 3",color:"#0FF"}));				
-				kids.push(Kid({name:"Thing 4",color:"#FF0"}));				
+				//kids.push(Kid({name:"Thing 2",color:"#0F0"}));
+				//kids.push(Kid({name:"Thing 3",color:"#0FF"}));				
+				//kids.push(Kid({name:"Thing 4",color:"#FF0"}));				
 			}
 			
 			setInterval(function(){
