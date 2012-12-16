@@ -220,16 +220,25 @@
 						
 						}else{  //keep calm and carry on
 							if(!Index.exitDoorSelected){ //select a door to go out if one isn't already set
-								if(Index.currentRoomIndex!=0){
+
+								if(Index.currentRoom.getIndex()!=0){
 									Index.doorChoice=Math.round(Math.random());  //Pick one of the two doors in the room.
 								}else{	//Hall is a special case
-									Index.doorChoice=Math.round(Math.random()*Index.validHallDoorList.length);									
-									Index.validHallDoorList.splice(Index.doorChoice,1);  //remove that door from the hall door list									
+									Index.doorChoice=Math.round(Math.random()*5);									
+									//Index.validHallDoorList.splice(Index.doorChoice,1);  //remove that door from the hall door list	
+									debugMessages.push("In Hall.  Door Choice:"+Index.doorChoice);
 								}
+								
+								
+								Index.currentRoom=getCurrentRoom(Index.x,Index.y);
+								
 								
 								//Get the door information for planning
 								Index.doorX=portals[Index.currentRoom.dList[Index.doorChoice]].getX();
 								Index.doorY=portals[Index.currentRoom.dList[Index.doorChoice]].getY();
+								
+								
+								//debugMessages.push("currentRoomName, dList, doorChoice:,"+Index.currentRoom.getName()+", "+Index.currentRoom.dList[0]+"."+Index.currentRoom.dList[1]+", "+Index.doorChoice);
 								
 								//Store the next Room for future use.  Uneeded
 								//Index.nextRoom=portals[Index.currentRoom.dList[Index.doorChoice]].getOtherRoom(Index.currentRoomIndex);
@@ -392,9 +401,9 @@
 				hallDoorList=[0,3,4,7,8,10];
 				
 				kids.push(Kid({name:"Thing 1",color:"#F0F"}));
-				kids.push(Kid({name:"Thing 2",color:"#0F0"}));
-				kids.push(Kid({name:"Thing 3",color:"#0FF"}));				
-				kids.push(Kid({name:"Thing 4",color:"#FF0"}));				
+				//kids.push(Kid({name:"Thing 2",color:"#0F0"}));
+				//kids.push(Kid({name:"Thing 3",color:"#0FF"}));				
+				//kids.push(Kid({name:"Thing 4",color:"#FF0"}));				
 			}
 			
 			setInterval(function(){
