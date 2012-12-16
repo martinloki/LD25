@@ -142,6 +142,7 @@
 				Index.goalRoomIndex=9;
 				Index.exitDoorSelected=false;
 				Index.inDoorWay=false;
+				Index.forceHallCorner=false;
 				
 				//spawn away from the walls
 				Index.xmin=Index.currentRoom.getX()+5;
@@ -212,7 +213,7 @@
 					}else{	//travel between rooms until the goal room is found
 							
 						if(Index.currentRoom.getIndex()==Index.goalRoomIndex){	//are we there yet?						
-							Index.timeLeftInRoom=Math.random()*600+200;
+							Index.timeLeftInRoom=Math.random()*50+50;
 							
 							Index.my_xy_factors=getVectorMultiplier(Index.x,Index.y,Math.random()*100+Index.x-50,Math.random()*100+Index.y-50);				
 							Index.velX=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[0];
@@ -220,15 +221,17 @@
 						
 						}else{  //keep calm and carry on
 							if(!Index.exitDoorSelected){ //select a door to go out if one isn't already set
-
-								if(Index.currentRoom.getIndex()!=0){
-									Index.doorChoice=Math.round(Math.random());  //Pick one of the two doors in the room.
-								}else{	//Hall is a special case
-									Index.doorChoice=Math.round(Math.random()*5);									
-									//Index.validHallDoorList.splice(Index.doorChoice,1);  //remove that door from the hall door list	
-									debugMessages.push("In Hall.  Door Choice:"+Index.doorChoice);
+								if(Index.forceHallCorner==true){
+									Index.doorChoice=6;  //force the hall corner
+								}else{
+									if(Index.currentRoom.getIndex()!=0){
+										Index.doorChoice=Math.round(Math.random());  //Pick one of the two doors in the room.
+									}else{	//Hall is a special case
+										Index.doorChoice=Math.round(Math.random()*5);									
+										//Index.validHallDoorList.splice(Index.doorChoice,1);  //remove that door from the hall door list	
+										//debugMessages.push("In Hall.  Door Choice:"+Index.doorChoice);
+									}
 								}
-								
 								
 								Index.currentRoom=getCurrentRoom(Index.x,Index.y);
 								
@@ -238,7 +241,7 @@
 								Index.doorY=portals[Index.currentRoom.dList[Index.doorChoice]].getY();
 								
 								
-								//debugMessages.push("currentRoomName, dList, doorChoice:,"+Index.currentRoom.getName()+", "+Index.currentRoom.dList[0]+"."+Index.currentRoom.dList[1]+", "+Index.doorChoice);
+								debugMessages.push("Doors:"+Index.currentRoom.dList[0]+","+Index.currentRoom.dList[1]+"   Choice:"+Index.currentRoom.dList[Index.doorChoice]+"   In:"+Index.currentRoom.getName());
 								
 								//Store the next Room for future use.  Uneeded
 								//Index.nextRoom=portals[Index.currentRoom.dList[Index.doorChoice]].getOtherRoom(Index.currentRoomIndex);
@@ -256,17 +259,37 @@
 										Index.exitPathY=-Index.height-1;	//if the door is above, start at the door
 									}
 									Index.exitPathX=0;									
-								}else{
+								}
+								if(portals[Index.currentRoom.dList[Index.doorChoice]].getType()=="vertical"){
 									Index.doorY-=Index.height/2; //prep with the corner half a width away from centerline
 									if((Index.doorX-Index.x)>0){
 										Index.doorX-=Index.width;
 										Index.exitPathX=Index.width+1;
 									}else{
-										Index.exitPathX=-Index.width-1;
+										Index.exitPathX=-Index.width;
 									}
 									Index.exitPathY=0;
 								}									
-								
+								if(portals[Index.currentRoom.dList[Index.doorChoice]].getType()=="special"){
+									if(Index.goalRoomIndex==6){  //If we are going to the Livingroom, use one set of points, otherwise, use the other.
+										Index.doorX-=Index.width/2;
+										Index.exitPathX+=Index.width+1;
+										
+										Index.doorY-=Index.height/2-1;
+										Index.exitPathY=0;
+										
+										debugMessages.push("going to Living Room");
+										
+									}else{
+										Index.doorX+=Index.width/2;
+										Index.exitPathX-=Index.width+1;
+										
+										Index.doorY-=Index.height/2-1;
+										Index.exitPathY=0;
+									}
+									Index.forceHallCorner=false;
+								}									
+
 								//Adjust the kid's vector to aim at the door.
 								Index.my_xy_factors=getVectorMultiplier(Index.x,Index.y,Index.doorX,Index.doorY);				
 								Index.velX=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[0];
@@ -316,9 +339,16 @@
 								
 								//If we are out of the doorway, note that.
 								if(Index.passDistX<=0&&Index.passDistY<=0){  //got into the next room
+									//hall is a special case with that dang corner.  If going to or from the living room, to to the corner before randomly selecting a new room.
+									lastRoom=Index.currentRoom.getIndex();
+									Index.currentRoom=getCurrentRoom(Index.x,Index.y);
+//									if(Index.currentRoom.getIndex()==0){
+//										if(lastRoom==6||Index.goalRoomIndex==6){
+//											Index.forceHallCorner=true;
+//										}
+//									}
 									Index.inDoorWay=false;
 									Index.exitDoorSelected=false;
-									Index.currentRoom=getCurrentRoom(Index.x,Index.y);
 								}
 							}								
 						}
@@ -392,11 +422,12 @@
 				portals.push(Portal({x:475,y:360,room0:4,room1:0,type:"vertical"}));	//4 - hall to kitchen
 				portals.push(Portal({x:410,y:480,room0:4,room1:5,type:"horizontal"}));	//5 - kitchen to dining
 				portals.push(Portal({x:475,y:540,room0:5,room1:6,type:"vertical"}));	//6 - dining to living
-				portals.push(Portal({x:535,y:385,room0:6,room1:0,type:"horizontal"}));	//7 - living to hall
+				portals.push(Portal({x:500,y:385,room0:6,room1:0,type:"horizontal"}));	//7 - living to hall
 				portals.push(Portal({x:525,y:275,room0:7,room1:0,type:"vertical"}));	//8 - hall to master bath
 				portals.push(Portal({x:610,y:225,room0:7,room1:8,type:"horizontal"}));	//9 - master bath to master
-				portals.push(Portal({x:475,y:275,room0:8,room1:0,type:"vertical"}));	//10 - master to hall
+				portals.push(Portal({x:525,y:48 ,room0:8,room1:0,type:"vertical"}));	//10 - master to hall
 				portals.push(Portal({x:666,y:360,room0:9,room1:0,type:"vertical"}));	//11 - hall to world
+				//portals.push(Portal({x:500,y:355,room0:0,room1:0,type:"special"}));	//12 - hall corner  (fake portal)
 				
 				hallDoorList=[0,3,4,7,8,10];
 				
