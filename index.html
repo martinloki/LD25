@@ -129,7 +129,7 @@
 				Index.height=KID_RADIUS;
 				Index.energy=Math.random()*25;
 				Index.focus=Math.random()*50+25;
-				Index.sugar=0;
+				Index.sugar=5;
 				Index.crashETA=0;
 				Index.timeLeftInRoom=5;
 				
@@ -239,21 +239,21 @@
 								//Index.exitPathX=0;  
 								//Index.exitPathY=0;
 								if(portals[Index.currentRoom.dList[Index.doorChoice]].getType()=="horizontal"){
-									Index.doorX-=Index.width/2;
+									Index.doorX-=Index.width/2; //prep with the corner half a width away from centerline
 									if((Index.doorY-Index.y)>0){
-										Index.doorY-=Index.height;
-										Index.exitPathY=Index.height*2;
+										Index.doorY-=Index.height;	//if the door is 
+										Index.exitPathY=Index.height+1;
 									}else{
-										Index.exitPathY=-Index.height*2;
+										Index.exitPathY=-Index.height-1;	//if the door is above, start at the door
 									}
 									Index.exitPathX=0;									
 								}else{
-									Index.doorY-=Index.height/2;
+									Index.doorY-=Index.height/2; //prep with the corner half a width away from centerline
 									if((Index.doorX-Index.x)>0){
 										Index.doorX-=Index.width;
-										Index.exitPathX=Index.width*2;
+										Index.exitPathX=Index.width+1;
 									}else{
-										Index.exitPathX=-Index.width;
+										Index.exitPathX=-Index.width-1;
 									}
 									Index.exitPathY=0;
 								}									
@@ -303,7 +303,7 @@
 								if(Index.passDistX>=0){Index.passDistX-=Math.abs(Index.velX);}
 								if(Index.passDistY>=0){Index.passDistY-=Math.abs(Index.velY);}
 								
-								debugMessages.push("Pass X,Y"+Math.floor(Index.passDistX)+","+Math.floor(Index.passDistY));
+								//debugMessages.push("Pass X,Y"+Math.floor(Index.passDistX)+","+Math.floor(Index.passDistY));
 								
 								//If we are out of the doorway, note that.
 								if(Index.passDistX<=0&&Index.passDistY<=0){  //got into the next room
@@ -392,9 +392,9 @@
 				hallDoorList=[0,3,4,7,8,10];
 				
 				kids.push(Kid({name:"Thing 1",color:"#F0F"}));
-				//kids.push(Kid({name:"Thing 2",color:"#0F0"}));
-				//kids.push(Kid({name:"Thing 3",color:"#0FF"}));				
-				//kids.push(Kid({name:"Thing 4",color:"#FF0"}));				
+				kids.push(Kid({name:"Thing 2",color:"#0F0"}));
+				kids.push(Kid({name:"Thing 3",color:"#0FF"}));				
+				kids.push(Kid({name:"Thing 4",color:"#FF0"}));				
 			}
 			
 			setInterval(function(){
