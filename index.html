@@ -83,6 +83,7 @@
 			
 			function Kid(Index){
 				Index = Index || {};
+				
 				Index.baseVel=10;
 				Index.width=KID_RADIUS;
 				Index.height=KID_RADIUS;
@@ -91,12 +92,24 @@
 				Index.sugar=0;
 				Index.crashETA=0;
 				Index.timeLeftInRoom=1000;
-				Index.velX=Index.baseVel*(Index.sugar+1)/10;
-				Index.velY=Index.baseVel*(Index.sugar+1)/10;
-				Index.currentRoom="tbd";
-				Index.inHouse=false;
+				Index.velX=Index.baseVel*(Index.sugar+1)/10*(Math.random()*2-1);
+				Index.velY=Index.baseVel*(Index.sugar+1)/10*(Math.random()*2-1);
+				Index.roomIndex=Math.floor(Math.random()*7+1);
+				Index.currentRoomObj=rooms[Index.roomIndex];  //Hall is 0 and outside is 9
+				//Index.currentRoomObj=rooms[0];
+				Index.currentRoom=Index.currentRoomObj.getName();
+				
+				//spawn away from the walls
+				Index.xmin=Index.currentRoomObj.getX()+5;
+				Index.xmax=Index.currentRoomObj.getX()+Index.currentRoomObj.getWidth()-Index.width-5;
+				Index.ymin=Index.currentRoomObj.getY()+5;
+				Index.ymax=Index.currentRoomObj.getY()+Index.currentRoomObj.getHeight()-Index.height-5;
+				
+				Index.x=Math.random()*(Index.xmax-Index.xmin)+Index.xmin;
+				Index.y=Math.random()*(Index.ymax-Index.ymin)+Index.ymin;
+				
 				Index.inHouse=rooms[0].isInRoom(Index.x,Index.y);
-				Index.currentRoomObj=rooms[0];
+				
 				Index.draw=function(){
 					canvas.drawImage(kid_image, Index.x,Index.y);
 					canvas.fillStyle=Index.color;
@@ -157,7 +170,7 @@
 					
 					
 					canvas.fillText("Debug:",x+15,y+50);
-					DebugString="";//"("+Index.x+","+Index.y+"),("+rooms[0].getX()+","+rooms[0].getY()+")";
+					DebugString=//Index.roomIndex//"";//"("+Index.x+","+Index.y+"),("+rooms[0].getX()+","+rooms[0].getY()+")";
 					canvas.fillText(DebugString,x+80,y+50);
 				};
 				
@@ -193,11 +206,9 @@
 				portals.push(Portal({x:475,y:98	,room0:7,room1:8}));	//master bath to master
 				portals.push(Portal({x:475,y:98	,room0:8,room1:0}));	//master to hall
 				portals.push(Portal({x:475,y:98	,room0:9,room1:0}));	//hall to world
-				
-				
-				kids.push(Kid({name:"Thing 1",color:"#F0F",x:Math.random()*(rooms[0].getWidth())+rooms[0].getX(),y:Math.random()*(rooms[0].getHeight())+rooms[0].getY()}));
-				kids.push(Kid({name:"Thing 2",color:"#0F0",x:Math.random()*(rooms[0].getWidth())+rooms[0].getX(),y:Math.random()*(rooms[0].getHeight())+rooms[0].getY()}));
-				
+								
+				kids.push(Kid({name:"Thing 1",color:"#F0F"}));
+				kids.push(Kid({name:"Thing 2",color:"#0F0"}));				
 			}
 			
 			setInterval(function(){
