@@ -143,6 +143,8 @@
 				Index.exitDoorSelected=false;
 				Index.inDoorWay=false;
 				Index.forceHallCorner=false;
+				Index.inTransit=false;
+				//Index.doorChoice=0;
 				
 				//spawn away from the walls
 				Index.xmin=Index.currentRoom.getX()+5;
@@ -209,6 +211,7 @@
 						
 						Index.timeLeftInRoom=-999;								//set the flag to avoid these steps until the next room is compelte
 						Index.exitDoorSelected=false;							//init this for travel
+						
 												
 					}else{	//travel between rooms until the goal room is found
 							
@@ -218,19 +221,31 @@
 							Index.my_xy_factors=getVectorMultiplier(Index.x,Index.y,Math.random()*100+Index.x-50,Math.random()*100+Index.y-50);				
 							Index.velX=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[0];
 							Index.velY=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[1];
+							
+							Index.inTransit=false;
 						
-						}else{  //keep calm and carry on
+						}else{  //keep calm and carry on							
 							if(!Index.exitDoorSelected){ //select a door to go out if one isn't already set
 								if(Index.forceHallCorner==true){
 									Index.doorChoice=6;  //force the hall corner
 								}else{
 									if(Index.currentRoom.getIndex()!=0){
-										Index.doorChoice=Math.round(Math.random());  //Pick one of the two doors in the room.
+										if(Index.inTransit){
+											Index.doorChoice=0;
+											if(Index.currentRoom.dList[Index.doorChoice]==lastDoor){
+												Index.doorChoice=1;
+											}											
+										}else{
+											Index.doorChoice=Math.round(Math.random());  //Pick one of the two doors in the room.
+											
+											Index.inTransit=true;
+										}
 									}else{	//Hall is a special case
 										Index.doorChoice=Math.round(Math.random()*5);									
 										//Index.validHallDoorList.splice(Index.doorChoice,1);  //remove that door from the hall door list	
 										//debugMessages.push("In Hall.  Door Choice:"+Index.doorChoice);
 									}
+									lastDoor=Index.currentRoom.dList[Index.doorChoice];
 								}
 								
 								Index.currentRoom=getCurrentRoom(Index.x,Index.y);
@@ -241,7 +256,7 @@
 								Index.doorY=portals[Index.currentRoom.dList[Index.doorChoice]].getY();
 								
 								
-								debugMessages.push("Doors:"+Index.currentRoom.dList[0]+","+Index.currentRoom.dList[1]+"   Choice:"+Index.currentRoom.dList[Index.doorChoice]+"   In:"+Index.currentRoom.getName());
+								debugMessages.push("Doors:"+Index.currentRoom.dList[0]+","+Index.currentRoom.dList[1]+"   Choice:"+Index.currentRoom.dList[Index.doorChoice]+"  lastDoor:"+lastDoor+"   In:"+Index.currentRoom.getName());
 								
 								//Store the next Room for future use.  Uneeded
 								//Index.nextRoom=portals[Index.currentRoom.dList[Index.doorChoice]].getOtherRoom(Index.currentRoomIndex);
