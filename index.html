@@ -77,6 +77,25 @@
 				return Index;
 			};
 			
+			function getVectorMultiplier(currentX,currentY,goalX,goalY){
+				xy_Factors=[];
+				
+				angle_to_goal=Math.atan2(goalY-currentY, goalX-currentX);
+				xy_Factors.push(Math.cos(angle_to_goal));
+				xy_Factors.push(Math.sin(angle_to_goal));
+				return xy_Factors;				
+			}
+
+			function getCurrentRoom(x,y){
+				currentRoom=rooms[8];
+				rooms.forEach(function(room){
+					if(room.inRoom(x,y)){
+						currentRoom=room;
+					}
+				});
+				return currentRoom;
+			}
+			
 			function Portal(Index){
 				goesToHall=(Index.room0==0||Index.room1==0);
 				Index = Index || {};
@@ -98,28 +117,6 @@
 				return Index;
 			};
 			
-			function getVectorMultiplier(currentX,currentY,goalX,goalY){
-				xy_Factors=[];
-				
-				angle_to_goal=Math.atan2(goalY-currentY, goalX-currentX);
-				xy_Factors.push(Math.cos(angle_to_goal));
-				xy_Factors.push(Math.sin(angle_to_goal));
-				return xy_Factors;				
-			}
-
-			function getCurrentRoom(x,y){
-				debugMessages.push("Getting Current Room.");
-				rooms.forEach(function(room){
-					if(room.equals(rooms[0])){
-						this.inHouse=room.isInRoom(x,y);
-					}
-					if(room.isInRoom(x,y)){
-						return room;
-					}
-				});
-				return rooms[9];
-			}
-							
 			function Kid(Index){
 				Index = Index || {};
 				
@@ -210,6 +207,8 @@
 						Index.exitDoorSelected=false;							//init this for travel
 						
 					}else{	//travel between rooms until the goal room is found
+						
+						debugMessages.push("Tried to set a door.");
 						
 						if(Index.currentRoom.equals(rooms[Index.goalRoomIndex])){	//are we there yet?
 						
@@ -310,8 +309,8 @@
 								}
 							}								
 						}
-					}
-					currentRoom=getCurrentRoom(Index.x,Index.y);
+					}					
+					Index.currentRoom=getCurrentRoom(Index.x,Index.y);
 				};  // end update
 				
 				Index.draw=function(){
