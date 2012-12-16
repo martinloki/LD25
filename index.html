@@ -7,7 +7,6 @@
 	</head>
 	<body>
 		<h1>Granny's Gummies</h1>
-		<!--<img id="background" src="images/background.png" alt="floorplan" width="800" height="600">-->
 		<script type='text/javascript'>
 			var CANVAS_WIDTH=800;
 			var CANVAS_HEIGHT=600;
@@ -83,13 +82,13 @@
 				Index.focus=Math.random()*50+25;
 				Index.sugar=0;
 				Index.crashETA=0;
-				Index.timeLeftInRoom=100;
+				Index.timeLeftInRoom=1000;
 				Index.velX=Index.baseVel*(Index.sugar+1)/10;
 				Index.velY=Index.baseVel*(Index.sugar+1)/10;
 				Index.currentRoom="tbd";
 				Index.inHouse=false;
 				Index.inHouse=rooms[0].isInRoom(Index.x,Index.y);
-				
+				Index.currentRoomObj=rooms[0];
 				
 				Index.draw=function(){
 					canvas.drawImage(kid_image, Index.x,Index.y);
@@ -99,15 +98,29 @@
 				};
 								
 				Index.update = function() {
+					
 					Index.x+=Index.velX;
 					Index.y+=Index.velY;
 					Index.timeLeftInRoom-=1
+										
+					if(Index.timeLeftInRoom>=0){
+						if(Index.x<Index.currentRoomObj.x0||(Index.x+Index.width)>Index.currentRoomObj.x1){
+							Index.velX*=-1;
+							Index.x+=Index.velX*2;
+						}
+						if(Index.y<Index.currentRoomObj.y0||(Index.y+Index.height)>Index.currentRoomObj.y1){
+							Index.velY*=-1;
+							Index.y+=Index.velY*2;
+						}
+					}
+					
 					Index.inHouse=rooms[0].isInRoom(Index.x,Index.y);
 					
 					Index.currentRoom="ESCAPED!!!!";
 					rooms.forEach(function(room) {
 						if(room.isInRoom(Index.x,Index.y)){
 							Index.currentRoom=room.getName();
+							Index.currentRoomObj=room;
 						}
 					});
 					
@@ -138,7 +151,7 @@
 					
 					
 					canvas.fillText("Debug:",x+15,y+50);
-					DebugString="("+Index.x+","+Index.y+"),("+rooms[0].getX()+","+rooms[0].getY()+")";
+					DebugString="";//"("+Index.x+","+Index.y+"),("+rooms[0].getX()+","+rooms[0].getY()+")";
 					canvas.fillText(DebugString,x+80,y+50);
 				};
 				
