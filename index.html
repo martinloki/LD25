@@ -67,7 +67,7 @@
 					//canvas.fillRect(Index.x0,Index.y0,Index.width,Index.height);
 				};
 				
-				Index.isInRoom=function(x,y){			
+				Index.inRoom=function(x,y){			
 					return x>=Index.x0 && x<=Index.x1 && y>=Index.y0 && y<=Index.y1;					
 				};
 
@@ -104,12 +104,13 @@
 				Index.focus=Math.random()*50+25;
 				Index.sugar=5;
 				Index.crashETA=0;
-				Index.timeLeftInRoom=400;
+				Index.timeLeftInRoom=200;
 				Index.currentRoomIndex=Math.floor(Math.random()*7+1);
 				Index.currentRoomObj=rooms[Index.currentRoomIndex];  //Hall is 0 and outside is 9
 				//Index.currentRoomObj=rooms[0];
 				Index.currentRoom=Index.currentRoomObj.getName();
 				Index.nextRoomIndex=9;
+				Index.targetDoorReached=false;
 				
 				//spawn away from the walls
 				Index.xmin=Index.currentRoomObj.getX()+5;
@@ -129,7 +130,7 @@
 				Index.velY=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[1];
 				
 				
-				Index.inHouse=rooms[0].isInRoom(Index.x,Index.y);
+				Index.inHouse=rooms[0].inRoom(Index.x,Index.y);
 				
 				Index.draw=function(){
 					canvas.drawImage(kid_image, Index.x,Index.y);
@@ -149,9 +150,11 @@
 					// 		otherwise leave through the other door following the same process as before.
 					//  		if this is the hall, pick a random door and mark it off the list of valid doors for the next choice.
 									
+					Index.x+=Index.velX;
+					Index.y+=Index.velY;
+					
 					if(Index.timeLeftInRoom>=0){
-						Index.x+=Index.velX;
-						Index.y+=Index.velY;
+
 						Index.timeLeftInRoom-=1
 						if(Index.x<Index.currentRoomObj.x0||(Index.x+Index.width)>Index.currentRoomObj.x1){
 							Index.velX*=-1;
@@ -161,31 +164,29 @@
 							Index.velY*=-1;
 							Index.y+=Index.velY*2;
 						}
-					}else if(Index.timeLeftInRoom!=-999){  //call once to setup next goal room
-						Index.validHallDoorList=hallDoorList; //need this set once
-						do{Index.nextRoomIndex=Math.floor(Math.random()*7+1);
-						}while (Index.nextRoomIndex!=Index.currentRoomIndex)
-						Index.timLeftInRoom=-999;
+					}else if(Index.timeLeftInRoom!=-999){  						//call once to setup next goal room
+						Index.validHallDoorList=hallDoorList; 					//need this set once for future hall travel
+						do{Index.nextRoomIndex=Math.floor(Math.random()*7+1); 	//choose a new room to go to
+						}while (Index.nextRoomIndex==Index.currentRoomIndex)
+						Index.timeLeftInRoom=-999;								//set the flag to avoid these steps until the next room is compelte
+						Index.targetDoorReached=false;							//init this for travel
 					}else{	//travel between rooms until the goal room is found
-						
-						if(Index.currentRoomIndex!=0){
-							Index.doorChoice=Math.round(Math.random());  //Pick one of the two doors in the room.
-						}else{	//Hall is a special case
-							Index.doorChoice=Math.round(Math.random()*Index.validHallDoorList.length);
-							//Index.validHallDoorList.
-						}
-						doorX=portals[Index.currentRoomObj.dList[Index.doorChoice]].getX()-Index.width/2;
-						doorY=portals[Index.currentRoomObj.dList[Index.doorChoice]].getY()-Index.height/2;
-						
-						
-						//are we there yet?
-						if(1=2){
-						}else{
-							Index.timLeftInRoom=Math.random()*600+200;
+						if(rooms[Index.nextRoomIndex].inRoom(Index.x,Index.y)){	//are we there yet?
+							Index.timeLeftInRoom=Math.random()*600+200;
 							Index.currentRoomObj=rooms[Index.nextRoomIndex];
 							Index.my_xy_factors=getVectorMultiplier(Index.x,Index.y,Math.random()*100+Index.x-50,Math.random()*100+Index.y-50);				
 							Index.velX=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[0];
 							Index.velY=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[1];
+						}else{  //keep calm and carry on
+							Index.targetDoorReached=false;
+							if(Index.currentRoomIndex!=0){
+								Index.doorChoice=Math.round(Math.random());  //Pick one of the two doors in the room.
+							}else{	//Hall is a special case
+								Index.doorChoice=Math.round(Math.random()*Index.validHallDoorList.length);
+								//Index.validHallDoorList.
+							}
+							doorX=portals[Index.currentRoomObj.dList[Index.doorChoice]].getX()-Index.width/2;
+							doorY=portals[Index.currentRoomObj.dList[Index.doorChoice]].getY()-Index.height/2;
 						}
 					}
 				};
@@ -262,7 +263,9 @@
 				hallDoorList=[0,3,4,7,8,10];
 				
 				kids.push(Kid({name:"Thing 1",color:"#F0F"}));
-				kids.push(Kid({name:"Thing 2",color:"#0F0"}));				
+				kids.push(Kid({name:"Thing 2",color:"#0F0"}));
+				kids.push(Kid({name:"Thing 3",color:"#0FF"}));				
+				kids.push(Kid({name:"Thing 4",color:"#FF0"}));				
 			}
 			
 			setInterval(function(){
