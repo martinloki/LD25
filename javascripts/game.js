@@ -85,7 +85,7 @@
 				Index.getY=function(){return Index.y;};
 				Index.getType=function(){return Index.type;};
 				Index.getOtherRoom=function(currentRoomIndex){
-					goalRoomIndex=0;
+					goalRoomIndex=0
 					if(Index.room0==currentRoomIndex){
 						goalRoomIndex=Index.room1;
 					}else{
