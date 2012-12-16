@@ -14,9 +14,31 @@
 			var textX=50;
 			var textY=50;
 			
-			var canvasElement=$("<canvas width='"+CANVAS_WIDTH+"' height='"+CANVAS_HEIGHT+"' style='border:1px solid #000000;'></canvas>");
-			var canvas=canvasElement.get(0).getContext("2d");
+			var mouseMoveMsg="";
+			var mouseClickMsg="";
 			
+			var canvasElement=$("<canvas id='GranyCanvas' width='"+CANVAS_WIDTH+"' height='"+CANVAS_HEIGHT+"' style='border:1px solid #000000;'></canvas>");
+			var canvas=canvasElement.get(0).getContext("2d");
+		
+			canvasElement.appendTo('body');
+		
+			var canvas2 = document.getElementById('GranyCanvas');
+			
+			canvas2.addEventListener('mousemove', function(evt) {
+				var mousePos = getMousePos(canvas2, evt);
+				mouseMoveMsg = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;			
+			}, false);
+			
+			canvas2.addEventListener('mousedown', function(evt) {
+				var mousePos = getMousePos(canvas2, evt);
+				mouseClickMsg = 'Clicked';			
+			}, false);
+			
+			canvas2.addEventListener('mouseup', function(evt) {
+				var mousePos = getMousePos(canvas2, evt);
+				mouseClickMsg = '';			
+			}, false);
+	  			
 			var bg_image = new Image();
 			var kid_image = new Image();
 			
@@ -31,6 +53,14 @@
 			
 			var totalDamage=0;
 			var timeLeft=120*30; //two min --> two hours  (120sec*FPS)... not clean, but...
+			
+			function getMousePos(canvas2, evt) {
+				var rect = canvas2.getBoundingClientRect();
+				return {
+				  x: evt.clientX - rect.left,
+				  y: evt.clientY - rect.top
+				};
+			}
 			
 			function Room(Index){
 				Index = Index || {};
@@ -514,10 +544,14 @@
 				
 				canvas.fillText("Parents Return in: "+Math.floor(timeLeft/30/60)+":"+Math.round(timeLeft/30%60),10,10);
 				canvas.fillText("Total Damage: $"+Math.floor(totalDamage*100)/100,10,20);
+				
+				canvas.fillText(mouseClickMsg,10,585);
+				canvas.fillText(mouseMoveMsg,10,595);
 			}
 
+			
 			init();
-			canvasElement.appendTo('body');
+			//canvasElement.appendTo('body');
 			
 		</script>
 	</body>
