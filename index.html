@@ -77,6 +77,10 @@
 			function Portal(Index){
 				goesToHall=(Index.room0==0||Index.room1==0);
 				Index = Index || {};
+				
+				Index.getX=function(){return Index.x;};
+				Index.getY=function(){return Index.y;};
+				
 				return Index;
 			};
 			
@@ -91,13 +95,14 @@
 				Index.focus=Math.random()*50+25;
 				Index.sugar=0;
 				Index.crashETA=0;
-				Index.timeLeftInRoom=1000;
+				Index.timeLeftInRoom=400;
 				Index.velX=Index.baseVel*(Index.sugar+1)/10*(Math.random()*2-1);
 				Index.velY=Index.baseVel*(Index.sugar+1)/10*(Math.random()*2-1);
 				Index.roomIndex=Math.floor(Math.random()*7+1);
 				Index.currentRoomObj=rooms[Index.roomIndex];  //Hall is 0 and outside is 9
 				//Index.currentRoomObj=rooms[0];
 				Index.currentRoom=Index.currentRoomObj.getName();
+				Index.nextRoomIndex=9;
 				
 				//spawn away from the walls
 				Index.xmin=Index.currentRoomObj.getX()+5;
@@ -116,13 +121,11 @@
 					canvas.fillText(Index.name,Index.x,Index.y);					
 				};
 								
-				Index.update = function() {
-					
-					Index.x+=Index.velX;
-					Index.y+=Index.velY;
-					Index.timeLeftInRoom-=1
-										
+				Index.update = function() {				
 					if(Index.timeLeftInRoom>=0){
+						Index.x+=Index.velX;
+						Index.y+=Index.velY;
+						Index.timeLeftInRoom-=1
 						if(Index.x<Index.currentRoomObj.x0||(Index.x+Index.width)>Index.currentRoomObj.x1){
 							Index.velX*=-1;
 							Index.x+=Index.velX*2;
@@ -131,17 +134,24 @@
 							Index.velY*=-1;
 							Index.y+=Index.velY*2;
 						}
+					}else if(Index.timeLeftInRoom!=-999){
+						Index.doorChoice=Math.round(Math.random());
+						Index.x=portals[Index.currentRoomObj.dList[Index.doorChoice]].getX()-Index.width/2;
+						Index.y=portals[Index.currentRoomObj.dList[Index.doorChoice]].getY()-Index.height/2;
+						Index.timeLeftInRoom=-999;
+						Index.nextRoomIndex=Math.floor(Math.random()*7+1);
+						//Index.currentRoomObj=rooms[Index.nextRoomIndex];
 					}
 					
-					Index.inHouse=rooms[0].isInRoom(Index.x,Index.y);
+					//Index.inHouse=rooms[0].isInRoom(Index.x,Index.y);
 					
-					Index.currentRoom="ESCAPED!!!!";
-					rooms.forEach(function(room) {
-						if(room.isInRoom(Index.x,Index.y)){
-							Index.currentRoom=room.getName();
-							Index.currentRoomObj=room;
-						}
-					});
+					//Index.currentRoom="ESCAPED!!!!";
+					//rooms.forEach(function(room) {
+					//	if(room.isInRoom(Index.x,Index.y)){
+					//		Index.currentRoom=room.getName();
+					//		Index.currentRoomObj=room;
+					//	}
+					//});
 					
 				};
 				
@@ -159,19 +169,26 @@
 				
 				Index.drawPanel = function(x,y){
 					canvas.fillText(Index.name,x,y);
-					canvas.fillText("In House:",x+15,y+10);
-					canvas.fillText("Location:",x+15,y+20);
-					canvas.fillText("Sugar Level:",x+15,y+30);
-					canvas.fillText("Time Left:",x+15,y+40);
-					canvas.fillText(Index.inHouse,x+80,y+10);
-					canvas.fillText(Index.currentRoom,x+80,y+20);
-					canvas.fillText(Index.sugar,x+80,y+30);
-					canvas.fillText(Index.timeLeftInRoom,x+80,y+40);
+					canvas.fillText("Location:",x+15,y+10);
+					canvas.fillText("Sugar Level:",x+15,y+20);					
+					canvas.fillText(Index.currentRoom,x+80,y+10);
+					canvas.fillText(Index.sugar,x+80,y+20);
 					
+					//------½DEBUGGING½-----
 					
-					canvas.fillText("Debug:",x+15,y+50);
-					DebugString=//Index.roomIndex//"";//"("+Index.x+","+Index.y+"),("+rooms[0].getX()+","+rooms[0].getY()+")";
-					canvas.fillText(DebugString,x+80,y+50);
+					debugStrings=new Array
+					debugStrings.push(String("In House:"+Index.inHouse));
+					debugStrings.push("Time Left:"+Index.timeLeftInRoom);
+					debugStrings.push("nextRoomID:"+Index.nextRoomIndex);
+					debugStrings.push("nextRoomName:"+rooms[Index.nextRoomIndex].getName());
+					debugStrings.push("DoorChoice:"+Index.doorChoice);
+					
+					debug_y=y+40;
+					canvas.fillText("Debug:",x+15,debug_y);
+					$.each(debugStrings, function() {
+						canvas.fillText(this,x+80,debug_y);
+						debug_y+=10;
+					}); 
 				};
 				
 				return Index;				
@@ -182,30 +199,31 @@
 				bg_image.src = 'images/background.png';
 				kid_image.src = 'images/kid.png';
 				
-				rooms.push(Room({roomName:"Halls",			x0:330,y0:0,	x1:667,y1:600, 	thisColor:"#FFF"}));
-				rooms.push(Room({roomName:"Kid's Room",		x0:330,y0:0,	x1:475,y1:135,	thisColor:"#00F"}));
-				rooms.push(Room({roomName:"Kid's Bathroom",	x0:330,y0:135,	x1:475,y1:200,	thisColor:"#0F0"}));
-				rooms.push(Room({roomName:"Office",			x0:330,y0:200,	x1:475,y1:335,	thisColor:"#0FF"}));
-				rooms.push(Room({roomName:"Kitchen",		x0:330,y0:335,	x1:475,y1:482,	thisColor:"#F00"}));
-				rooms.push(Room({roomName:"Dining Room",	x0:330,y0:482,	x1:475,y1:600,	thisColor:"#F0F"}));
+				rooms.push(Room({roomName:"Halls",			x0:330,y0:0,	x1:667,y1:600,	dList:[0,3,4,7,8,10,11],	thisColor:"#FFF"}));
+				rooms.push(Room({roomName:"Kid's Room",		x0:330,y0:0,	x1:475,y1:135,	dList:[0,1],	thisColor:"#00F"}));
+				rooms.push(Room({roomName:"Kid's Bathroom",	x0:330,y0:135,	x1:475,y1:200,	dList:[1,2],	thisColor:"#0F0"}));
+				rooms.push(Room({roomName:"Office",			x0:330,y0:200,	x1:475,y1:335,	dList:[2,3],	thisColor:"#0FF"}));
+				rooms.push(Room({roomName:"Kitchen",		x0:330,y0:335,	x1:475,y1:482,	dList:[4,5],	thisColor:"#F00"}));
+				rooms.push(Room({roomName:"Dining Room",	x0:330,y0:482,	x1:475,y1:600,	dList:[5,6],	thisColor:"#F0F"}));
 				
-				rooms.push(Room({roomName:"Living Room",		x0:475,y0:385,	x1:667,y1:600,	thisColor:"#888"}));
-				rooms.push(Room({roomName:"Parent's Bathroom",	x0:524,y0:225,	x1:667,y1:338,	thisColor:"#F55"}));
-				rooms.push(Room({roomName:"Parent's Room",		x0:524,y0:0,	x1:667,y1:225,	thisColor:"#FF0"}));
+				rooms.push(Room({roomName:"Living Room",		x0:475,y0:385,	x1:667,y1:600,	dList:[6,7],	thisColor:"#888"}));
+				rooms.push(Room({roomName:"Parent's Bathroom",	x0:524,y0:225,	x1:667,y1:338,	dList:[8,9],	thisColor:"#F55"}));
+				rooms.push(Room({roomName:"Parent's Room",		x0:524,y0:0,	x1:667,y1:225,	dList:[9,10],	thisColor:"#FF0"}));
+				rooms.push(Room({roomName:"Outside",			x0:667,y0:0,	x1:800,y1:600,	dList:[11],		thisColor:"#FF0"}));
 				
 
-				portals.push(Portal({x:475,y:98	,room0:1,room1:0}));	//kids to hall
-				portals.push(Portal({x:370,y:138,room0:1,room1:2}));	//kids to kids bath
-				portals.push(Portal({x:370,y:200,room0:2,room1:3}));	//kids bath to office
-				portals.push(Portal({x:370,y:200,room0:3,room1:0}));	//office to hall
-				portals.push(Portal({x:475,y:98	,room0:4,room1:0}));	//hall to kitchen
-				portals.push(Portal({x:475,y:98	,room0:4,room1:5}));	//kitchen to dining
-				portals.push(Portal({x:475,y:98	,room0:5,room1:6}));	//dining to living
-				portals.push(Portal({x:475,y:98	,room0:6,room1:0}));	//living to hall
-				portals.push(Portal({x:475,y:98	,room0:7,room1:0}));	//hall to master bath
-				portals.push(Portal({x:475,y:98	,room0:7,room1:8}));	//master bath to master
-				portals.push(Portal({x:475,y:98	,room0:8,room1:0}));	//master to hall
-				portals.push(Portal({x:475,y:98	,room0:9,room1:0}));	//hall to world
+				portals.push(Portal({x:475,y:98	,room0:1,room1:0}));	//0 - kids to hall
+				portals.push(Portal({x:370,y:138,room0:1,room1:2}));	//1 - kids to kids bath
+				portals.push(Portal({x:370,y:200,room0:2,room1:3}));	//2 - kids bath to office
+				portals.push(Portal({x:475,y:230,room0:3,room1:0}));	//3 - office to hall
+				portals.push(Portal({x:475,y:360,room0:4,room1:0}));	//4 - hall to kitchen
+				portals.push(Portal({x:410,y:480,room0:4,room1:5}));	//5 - kitchen to dining
+				portals.push(Portal({x:475,y:540,room0:5,room1:6}));	//6 - dining to living
+				portals.push(Portal({x:535,y:385,room0:6,room1:0}));	//7 - living to hall
+				portals.push(Portal({x:525,y:275,room0:7,room1:0}));	//8 - hall to master bath
+				portals.push(Portal({x:610,y:225,room0:7,room1:8}));	//9 - master bath to master
+				portals.push(Portal({x:475,y:275,room0:8,room1:0}));	//10 - master to hall
+				portals.push(Portal({x:666,y:360,room0:9,room1:0}));	//11 - hall to world
 								
 				kids.push(Kid({name:"Thing 1",color:"#F0F"}));
 				kids.push(Kid({name:"Thing 2",color:"#0F0"}));				
