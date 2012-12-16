@@ -28,13 +28,22 @@
 			var hallDoorList=[];
 			
 			var debugMessages=[];
-						
+			
+			var totalDamage=0;
+			var timeLeft=120*30; //two min --> two hours  (120sec*FPS)... not clean, but...
+			
 			function Room(Index){
 				Index = Index || {};
 				Index.width=Index.x1-Index.x0;
 				Index.height=Index.y1-Index.y0;
 				Index.centerX=(Index.x0+Index.x1)/2;
 				Index.centerY=(Index.y0+Index.y1)/2;
+				Index.roomDamage=0;
+				
+				Index.damageRoom=function(damage){
+					Index.roomDamage+=damage;
+					totalDamage+=damage;
+				};
 				
 				Index.getName = function(){
 					return Index.roomName;
@@ -370,6 +379,14 @@
 							}								
 						}
 					}
+					
+					//deal damage to rooms.  More if we are bouncing off the walls, less if just passing through.
+					if(Index.inTransit){
+						damagetoDeal=1*Index.sugar/1000;
+					}else{
+						damagetoDeal=.13*Index.sugar/1000;
+					}
+					Index.currentRoom.damageRoom(damagetoDeal);					
 				};  // end update
 				
 				Index.draw=function(){
@@ -460,8 +477,9 @@
 				},1000/FPS);
 
 			function update(){
-				textX+=1;
-				textY+=1;
+				//textX+=1;
+				//textY+=1;
+				timeLeft-=1;
 				kids.forEach(function(kid) {
 					kid.update();
 				});
@@ -490,7 +508,12 @@
 				canvas.fillText("Debug:",5,debug_y);
 				$.each(debugMessages, function() {
 					canvas.fillText(this,10,debug_y+=10);
-				});										
+				});	
+				
+				canvas.fillStyle="#000";
+				
+				canvas.fillText("Parents Return in: "+Math.floor(timeLeft/30/60)+":"+Math.round(timeLeft/30%60),10,10);
+				canvas.fillText("Total Damage: $"+Math.floor(totalDamage*100)/100,10,20);
 			}
 
 			init();
