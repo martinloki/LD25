@@ -448,8 +448,19 @@
 							}
 							
 							//take some steps
+							
+							oldX=Index.x;
+							oldY=Index.y;
+							
 							Index.x+=Index.velX;
 							Index.y+=Index.velY;
+					
+					
+							Index.my_xy_factors=getVectorMultiplier(oldX,oldY,Index.x,Index.y);	
+							Index.velX=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[0];
+							Index.velY=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[1];
+						
+					
 					
 							//navigate any doorways
 							if(Index.inDoorWay){
