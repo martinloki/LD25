@@ -34,13 +34,33 @@
 			canvas2.addEventListener('mousedown', function(evt) {
 				var mousePos = getMousePos(canvas2, evt);
 				mouseClickMsg = 'Clicked';
-
+				if(gameState==1){
+					//canvas.fillText("checking "+mousePos.x ,20,20);
+					if(mousePos.x>=10&&mousePos.x<=75){ //check the x
+						//canvas.fillText("passed x",20,30);
+						if(mousePos.y>=303&&mousePos.y<=365){
+							kids[0].addSugar();
+						}
+						if(mousePos.y>=378&&mousePos.y<=439){
+							kids[1].addSugar();
+						}
+						if(mousePos.y>=454&&mousePos.y<=516){
+							kids[2].addSugar();
+						}
+						if(mousePos.y>=530&&mousePos.y<=590){
+							kids[3].addSugar();
+							canvas.fillText("Adding to 3",20,20);
+						}
+					}
+				}
 			}, false);
 			
 			canvas2.addEventListener('mouseup', function(evt) {
 				var mousePos = getMousePos(canvas2, evt);
 				mouseClickMsg = '';
-				toggleState();
+				if(gameState!=1){
+					toggleState();
+				}
 			}, false);
 	  			
 			function toggleState(){
@@ -186,7 +206,9 @@
 				Index.energy=Math.random()*25;
 				Index.focus=Math.random()*50+25;
 				Index.sugar=5;
-				Index.crashETA=0;
+				Index.sugarMax=25;
+				Index.sugarCrashTimeLeft=0;
+				//Index.crashETA=0;
 				Index.timeLeftInRoom=5;
 				
 				//Pick a starting room.  The Hall is 0 and Outside is 9
@@ -203,6 +225,8 @@
 				//Index.doorChoice=0;
 				
 				Index.lastDoor=12;
+				
+				Index.myDamage=0;
 				
 				//spawn away from the walls
 				Index.xmin=Index.currentRoom.getX()+5;
@@ -223,6 +247,16 @@
 				//misc getters
 				Index.getRoom = function(){
 					return Index.currentRoomName;
+				};
+				
+				Index.addSugar = function(){
+					if(Index.sugarCrashTimeLeft<=0){
+						Index.sugar+=1;
+					}
+					if(Index.sugar>=Index.sugarMax){
+						Index.sugarCrashTimeLeft=200;
+					}
+					return 1;
 				};
 				
 				Index.getSugar = function(){
@@ -247,8 +281,15 @@
 									
 					if(Index.timeLeftInRoom>=0){  //still playtime in this room?
 						//If we are just running around, we can update movement here.  Otherwise it is at the bottom.
+						
+						
+						oldPosX=Index.x;
+						oldPosY=Index.y;
+						
 						Index.x+=Index.velX;
 						Index.y+=Index.velY;
+					
+					
 					
 						Index.timeLeftInRoom-=1;
 						if(Index.x<Index.currentRoom.x0||(Index.x+Index.width)>Index.currentRoom.x1){
@@ -259,6 +300,13 @@
 							Index.velY*=-1;
 							Index.y+=Index.velY*2;
 						}
+						
+						Index.my_xy_factors=getVectorMultiplier(oldPosX,oldPosY,Index.x,Index.y);	
+						Index.velX=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[0];
+						Index.velY=Index.baseVel*(Index.sugar+1)/10*Index.my_xy_factors[1];
+						
+						//Index.velX=Index.velX*(Index.sugar+1)/10;
+						//Index.velY=Index.velY*(Index.sugar+1)/10;
 						
 					}else if(Index.timeLeftInRoom != -999){  						//call once to setup next goal room
 						
@@ -429,11 +477,22 @@
 					
 					//deal damage to rooms.  More if we are bouncing off the walls, less if just passing through.
 					if(Index.inTransit){
-						damagetoDeal=1*Index.sugar/1000;
+						damagetoDeal=Math.random()*3*Index.sugar/1000;
 					}else{
-						damagetoDeal=.13*Index.sugar/1000;
+						damagetoDeal=Math.random()*Index.sugar/1000;
 					}
-					Index.currentRoom.damageRoom(damagetoDeal);					
+					Index.myDamage+=damagetoDeal;
+					Index.currentRoom.damageRoom(damagetoDeal);	
+					
+					if(Index.sugarCrashTimeLeft>=0){
+						Index.sugar-=Math.random()*.5;
+						Index.sugarCrashTimeLeft-=1
+					}else{
+						Index.sugar-=Math.random()*.01;
+					}					
+					if(Index.sugar<=0){
+						Index.sugar=0;
+					}
 				};  // end update
 				
 				Index.draw=function(){
@@ -444,10 +503,11 @@
 				
 				Index.drawPanel = function(x,y){
 					canvas.fillText(Index.name,x,y);
-					canvas.fillText("Location:",x+15,y+10);
-					canvas.fillText("Sugar Level:",x+15,y+20);					
-					canvas.fillText(Index.currentRoom.getName(),x+80,y+10);
-					canvas.fillText(Index.sugar,x+80,y+20);
+					canvas.fillText("Location: "+Index.currentRoom.getName(),x+15,y+10);
+					canvas.fillText("Sugar Level: "+Math.floor(Index.sugar*10)/10,x+15,y+20);					
+					canvas.fillText("Damage Done: $"+Math.floor(Index.myDamage*100)/100,x+15,y+30);
+					if(Index.sugarCrashTimeLeft>0){canvas.fillText("SUGAR CRASH!!!!",x+15,y+40);}
+					
 					
 					//------½DEBUGGING½-----
 					
@@ -469,9 +529,9 @@
 					debug_y=y+40;
 					canvas.fillStyle="#000";
 					
-					canvas.fillText("Debug:",x+15,debug_y);
+					//canvas.fillText("Debug:",x+15,debug_y);
 					$.each(debugStrings, function() {
-						canvas.fillText(this,x+80,debug_y);
+						//canvas.fillText(this,x+80,debug_y);
 						debug_y+=10;
 					});				
 				};
@@ -520,10 +580,10 @@
 				
 				hallDoorList=[0,3,4,7,8,10];
 				
-				kids.push(Kid({name:"Thing 1",color:"#F0F"}));
-				kids.push(Kid({name:"Thing 2",color:"#0F0"}));
-				kids.push(Kid({name:"Thing 3",color:"#0FF"}));				
-				kids.push(Kid({name:"Thing 4",color:"#FF0"}));	
+				kids.push(Kid({name:"Lizzy",color:"#000"}));
+				kids.push(Kid({name:"Dave",color:"#000"}));
+				kids.push(Kid({name:"Tim",color:"#000"}));				
+				kids.push(Kid({name:"Emmy",color:"#000"}));	
 
 				totalDamage=0;
 				timeLeft=60*30; //two min --> two hours  (120sec*FPS)... not clean, but...				
@@ -540,7 +600,7 @@
 							canvas.font = "normal normal 30px Verdana";
 							damageString="Total Damage: $"+Math.floor(totalDamage*100)/100;
 							canvas.fillText(damageString,400-canvas.measureText(damageString).width/2,380);
-							canvas.font = "normal normal 10px Verdana";
+							canvas.font = "normal normal 10px Verdana";							
 						}
 					}
 					
@@ -566,29 +626,30 @@
 					canvas.fillText(room.getName(),room.getX()+5,room.getY()+10);
 				});
 				
-				nextPanelX=50;
-				nextPanelY=50;
+				nextPanelX=100;
+				nextPanelY=320;
 				kids.forEach(function(kid) {		
 						kid.draw();
 						kid.drawPanel(nextPanelX,nextPanelY);
-						nextPanelY+=150;
+						nextPanelY+=75;
 				});
 
 				debug_y=200;
 				canvas.fillStyle="#000";
-				canvas.fillText("Debug:",5,debug_y);
+				//canvas.fillText("Debug:",5,debug_y);
 				$.each(debugMessages, function() {
-					canvas.fillText(this,10,debug_y+=10);
+					//canvas.fillText(this,10,debug_y+=10);
 				});	
 				
-				canvas.fillStyle="#000";
+				canvas.fillStyle="#000";				
+				canvas.font = "normal normal 30px Verdana";							
+				canvas.fillText(Math.floor(timeLeft/30/60)+":"+Math.round(timeLeft/30%60),20,170);
+				canvas.fillText("$"+Math.floor(totalDamage*100)/100,20,260);
+				canvas.font = "normal normal 10px Verdana";
 				
-				canvas.fillText("Parents Return in: "+Math.floor(timeLeft/30/60)+":"+Math.round(timeLeft/30%60),10,10);
-				canvas.fillText("Total Damage: $"+Math.floor(totalDamage*100)/100,10,20);
-				
-				canvas.fillText("GameState:"+gameState,10,575);
-				canvas.fillText(mouseClickMsg,10,585);
-				canvas.fillText(mouseMoveMsg,10,595);
+				//canvas.fillText("GameState:"+gameState,10,575);
+				//canvas.fillText(mouseClickMsg,10,585);
+				//canvas.fillText(mouseMoveMsg,10,595);
 			}
 
 			
