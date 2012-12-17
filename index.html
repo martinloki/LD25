@@ -69,7 +69,7 @@
 			var debugMessages=[];
 			
 			var totalDamage=0;
-			var timeLeft=120*30; //two min --> two hours  (120sec*FPS)... not clean, but...
+			var timeLeft=60*30; //two min --> two hours  (120sec*FPS)... not clean, but...
 			
 			function getMousePos(canvas2, evt) {
 				var rect = canvas2.getBoundingClientRect();
@@ -526,7 +526,7 @@
 				kids.push(Kid({name:"Thing 4",color:"#FF0"}));	
 
 				totalDamage=0;
-				timeLeft=120*30; //two min --> two hours  (120sec*FPS)... not clean, but...				
+				timeLeft=60*30; //two min --> two hours  (120sec*FPS)... not clean, but...				
 			}
 			
 			setInterval(function(){
@@ -550,6 +550,7 @@
 				//textX+=1;
 				//textY+=1;
 				timeLeft-=1;
+				if(timeLeft<=0){toggleState();}
 				kids.forEach(function(kid) {
 					kid.update();
 				});
